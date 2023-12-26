@@ -1,14 +1,19 @@
 //! Process management syscalls
 use crate::{
     config::MAX_SYSCALL_NUM,
-    task::{exit_current_and_run_next, suspend_current_and_run_next, TaskStatus},
+    task::{
+        exit_current_and_run_next, get_current_task_info, suspend_current_and_run_next, TaskStatus,
+    },
     timer::get_time_us,
 };
 
 #[repr(C)]
 #[derive(Debug)]
+/// asd
 pub struct TimeVal {
+    /// asd
     pub sec: usize,
+    /// asd
     pub usec: usize,
 }
 
@@ -16,11 +21,11 @@ pub struct TimeVal {
 #[allow(dead_code)]
 pub struct TaskInfo {
     /// Task status in it's life cycle
-    status: TaskStatus,
+    pub(crate) status: TaskStatus,
     /// The numbers of syscall called by task
-    syscall_times: [u32; MAX_SYSCALL_NUM],
+    pub(crate) syscall_times: [u32; MAX_SYSCALL_NUM],
     /// Total running time of task
-    time: usize,
+    pub(crate) time: usize,
 }
 
 /// task exits and submit an exit code
@@ -51,7 +56,11 @@ pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
 }
 
 /// YOUR JOB: Finish sys_task_info to pass testcases
+/// 查询当前正在执行的任务信息，任务信息包括任务控制块相关信息（任务状态）、
+/// 任务使用的系统调用及调用次数、系统调用时刻距离任务第一次被调度时刻的时长（单位ms）。
 pub fn sys_task_info(_ti: *mut TaskInfo) -> isize {
     trace!("kernel: sys_task_info");
-    -1
+    let ti = get_current_task_info();
+    unsafe { *_ti = TaskInfo { ..ti } }
+    0
 }
